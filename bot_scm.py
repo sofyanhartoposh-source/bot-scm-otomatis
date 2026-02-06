@@ -3,6 +3,7 @@ import requests
 import json
 import pandas as pd
 import io
+import os
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -29,12 +30,15 @@ def jalankan_bot():
         wait = WebDriverWait(driver, 25)
         
         print("[3/6] Mengisi Form Login...")
-        # Logika pencarian input
+        # Bot akan mengambil data dari brankas GitHub Secrets
+        email_rahasia = os.environ.get('EMAIL_SCM')
+        pass_rahasia = os.environ.get('PASS_SCM')
+
         email_input = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='text' or @placeholder='Email atau NIP']")))
-        email_input.send_keys("sofyan.hartopo@pln.co.id")
+        email_input.send_keys(email_rahasia)
         
         pass_input = driver.find_element(By.XPATH, "//input[@type='password']")
-        pass_input.send_keys("9314014DY")
+        pass_input.send_keys(pass_rahasia)
         
         print("-> Mengetuk tombol Log in...")
         login_btn = driver.find_element(By.XPATH, "//button[contains(text(), 'Log in')]")
