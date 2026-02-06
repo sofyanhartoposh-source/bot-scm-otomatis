@@ -11,10 +11,13 @@ from selenium.webdriver.support import expected_conditions as EC
 def jalankan_bot():
     print("=== [LOG START] Memulai Operasi Bot SCM ===")
     
+    # 1. Konfigurasi Browser Siluman
     options = uc.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-gpu') # Tambahan penting untuk server
+    options.add_argument('--remote-debugging-port=9222') # Paksa port debug agar tidak bentrok
     
     print("[1/6] Menyiapkan Browser Siluman...")
     driver = uc.Chrome(options=options, version_main=144)
