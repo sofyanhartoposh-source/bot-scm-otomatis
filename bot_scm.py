@@ -9,69 +9,75 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 def jalankan_bot():
-    # 1. Konfigurasi Browser Siluman
+    print("=== [LOG START] Memulai Operasi Bot SCM ===")
+    
     options = uc.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     
+    print("[1/6] Menyiapkan Browser Siluman...")
     driver = uc.Chrome(options=options)
     
     try:
-        print("Membuka SCM PLN Nusa Daya...")
+        print("[2/6] Membuka Halaman Login: https://scm.nusadaya.net/login")
         driver.get("https://scm.nusadaya.net/login")
         
-        wait = WebDriverWait(driver, 20)
+        wait = WebDriverWait(driver, 25)
         
-        # 2. Proses Login
-        print("Memasukkan kredensial...")
+        print("[3/6] Mengisi Form Login...")
+        # Logika pencarian input
         email_input = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='text' or @placeholder='Email atau NIP']")))
-        pass_input = driver.find_element(By.XPATH, "//input[@type='password']")
-        
         email_input.send_keys("sofyan.hartopo@pln.co.id")
+        
+        pass_input = driver.find_element(By.XPATH, "//input[@type='password']")
         pass_input.send_keys("9314014DY")
         
+        print("-> Mengetuk tombol Log in...")
         login_btn = driver.find_element(By.XPATH, "//button[contains(text(), 'Log in')]")
         login_btn.click()
         
-        print("Login berhasil, menunggu session...")
-        time.sleep(10) # Kasih waktu buat server bikin session cookie
+        print("-> Login dikirim, menunggu dashboard (15 detik)...")
+        time.sleep(15)
         
-        # 3. Ambil Cookie Login
-        # Ini penting supaya kita bisa download file lewat link export
-        session_cookies = {c['name']: c['value'] for c in driver.get_cookies()}
-        
-        # 4. Download Excel lewat link Export Langsung
+        # Cek apakah login berhasil dengan melihat cookie
+        cookies = driver.get_cookies()
+        if not cookies:
+            print("(!) Peringatan: Tidak ada cookie terdeteksi. Login mungkin gagal.")
+        else:
+            print(f"-> Berhasil mendapatkan {len(cookies)} cookies.")
+
+        print("[4/6] Menembak URL Export Langsung...")
+        session_cookies = {c['name']: c['value'] for c in cookies}
         export_url = "https://scm.nusadaya.net/monitoring-kontrak-rinci/export?khs=all&bidang=all&tahun=2026&stage="
-        print("Mendownload data via Export Link...")
         
-        r = requests.get(export_url, cookies=session_cookies)
+        response_dl = requests.get(export_url, cookies=session_cookies)
         
-        # 5. Baca Excel pake Pandas (Tanpa simpan file ke laptop)
-        print("Membaca isi Excel...")
-        df = pd.read_excel(io.BytesIO(r.content))
+        if response_dl.status_code == 200:
+            print(f"-> Download Sukses! Ukuran file: {len(response_dl.content)} bytes")
+        else:
+            print(f"(!) Gagal download. Status Code: {response_dl.status_code}")
+            return
+
+        print("[5/6] Membongkar isi Excel dengan Pandas...")
+        df = pd.read_excel(io.BytesIO(response_dl.content))
+        df = df.fillna("") # Bersihkan data kosong agar JSON tidak rusak
+        data_rows = df.values.tolist()
+        print(f"-> Total data ditemukan: {len(data_rows)} baris.")
+
+        print("[6/6] Mengirim data ke Google Sheets...")
+        gas_url = "https://script.google.com/macros/s/AKfycbzuWeZNwdAqMDcg81bfkiOhIosljdswcR0tdRWeenQjwokhgyuM_0PZORvMt8IH5-E/exec"
         
-        # Bersihkan data (ganti NaN jadi string kosong biar gak error di JSON)
-        df = df.fillna("")
+        payload = json.dumps({"rows": data_rows})
+        res_gas = requests.post(gas_url, data=payload, headers={'Content-Type': 'application/json'})
         
-        # Ambil SEMUA baris data
-        all_data = df.values.tolist()
-        
-        # 6. Kirim Ke Google Sheets (Ditimpa Total)
-        gas_url = "https://script.google.com/macros/s/AKfycbzuWeZNwdAqMDcg81bfkiOhIosljdswcR0tdRWeenQjwokhgyuM_0PZORvMt8IH5-E/exec" 
-        payload = json.dumps({"rows": all_data})
-        
-        headers = {'Content-Type': 'application/json'}
-        print(f"Mengirim {len(all_data)} baris data ke Google Sheets...")
-        
-        response = requests.post(gas_url, data=payload, headers=headers)
-        print(f"Respon Google Sheets: {response.text}")
+        print(f"=== [HASIL AKHIR] Respon dari Google Sheets: {res_gas.text} ===")
 
     except Exception as e:
-        print(f"Waduh, ada kendala: {str(e)}")
+        print(f"!!! [ERROR] Terjadi kendala teknis: {str(e)}")
     finally:
+        print("=== [LOG END] Menutup Browser & Selesai ===")
         driver.quit()
-        print("Bot selesai bekerja.")
 
 if __name__ == "__main__":
     jalankan_bot()
