@@ -9,11 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+          
       - name: Install Library
         run: pip install requests selenium undetected-chromedriver pandas openpyxl
+        
       - name: Jalankan Bot
+        # Bagian env ini yang WAJIB ada supaya bot bisa baca Secret kamu
+        env:
+          EMAIL_SCM: ${{ secrets.EMAIL_SCM }}
+          PASS_SCM: ${{ secrets.PASS_SCM }}
         run: python bot_scm.py
