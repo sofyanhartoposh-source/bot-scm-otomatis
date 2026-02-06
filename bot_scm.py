@@ -69,7 +69,7 @@ def jalankan_bot():
         print(f"-> Total data ditemukan: {len(data_rows)} baris.")
 
         print("[6/6] Mengirim data ke Google Sheets...")
-        gas_url = "https://script.google.com/macros/s/AKfycbzuWeZNwdAqMDcg81bfkiOhIosljdswcR0tdRWeenQjwokhgyuM_0PZORvMt8IH5-E/exec"
+        gas_url = "https://script.google.com/macros/s/AKfycbzrpSwYWqzvtvqugpWI2UTr6Ivg2C87qFkIO4UrYwyaBIglD8zX7jDV_aPNzBImwSI/exec"
         
         payload = json.dumps({"rows": data_rows})
         res_gas = requests.post(gas_url, data=payload, headers={'Content-Type': 'application/json'})
