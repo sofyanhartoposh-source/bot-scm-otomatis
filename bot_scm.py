@@ -17,7 +17,7 @@ def jalankan_bot():
     options.add_argument('--disable-dev-shm-usage')
     
     print("[1/6] Menyiapkan Browser Siluman...")
-    driver = uc.Chrome(options=options)
+    driver = uc.Chrome(options=options, version_main=144)
     
     try:
         print("[2/6] Membuka Halaman Login: https://scm.nusadaya.net/login")
