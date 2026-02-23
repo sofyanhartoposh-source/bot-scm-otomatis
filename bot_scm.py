@@ -66,11 +66,27 @@ def jalankan_bot():
             print(f"(!) Gagal download. Status Code: {response_dl.status_code}")
             return
 
-        print("[5/6] Membongkar isi Excel dengan Pandas...")
-        df = pd.read_excel(io.BytesIO(response_dl.content))
-        df = df.fillna("") # Bersihkan data kosong agar JSON tidak rusak
-        data_rows = df.values.tolist()
-        print(f"-> Total data ditemukan: {len(data_rows)} baris.")
+        print("[5/6] Membongkar isi Excel & Mengekstrak Hyperlink...")
+        
+        # Gunakan engine openpyxl untuk membaca file excel
+        from openpyxl import load_workbook
+        
+        wb = load_workbook(filename=io.BytesIO(response_dl.content), data_only=False)
+        ws = wb.active
+        
+        data_rows = []
+        # Mulai iterasi dari baris ke-2 (asumsi baris 1 adalah header)
+        for row in ws.iter_rows(min_row=2):
+            current_row = []
+            for cell in row:
+                # CEK: Jika sel punya hyperlink, ambil URL-nya
+                if cell.hyperlink:
+                    current_row.append(cell.hyperlink.target)
+                else:
+                    current_row.append(cell.value if cell.value is not None else "")
+            data_rows.append(current_row)
+
+        print(f"-> Total data ditemukan: {len(data_rows)} baris dengan hyperlink diekstrak.")
 
         print("[6/6] Mengirim data ke Google Sheets...")
         gas_url = "https://script.google.com/macros/s/AKfycbzrpSwYWqzvtvqugpWI2UTr6Ivg2C87qFkIO4UrYwyaBIglD8zX7jDV_aPNzBImwSI/exec"
