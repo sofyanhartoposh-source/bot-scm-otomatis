@@ -76,13 +76,19 @@ def jalankan_bot():
         
         data_rows = []
         # Mulai iterasi dari baris ke-2 (asumsi baris 1 adalah header)
+        # Mulai iterasi dari baris ke-2
         for row in ws.iter_rows(min_row=2):
             current_row = []
             for cell in row:
-                # CEK: Jika sel punya hyperlink, ambil URL-nya
+                # MODIFIKASI: Ambil Label + Link sekaligus
                 if cell.hyperlink:
-                    current_row.append(cell.hyperlink.target)
+                    # Gabungkan Label asli dan URL-nya dengan spasi
+                    # Contoh hasil: "23 Januari 2026 https://scm..."
+                    label = str(cell.value) if cell.value is not None else "Lihat File"
+                    url = cell.hyperlink.target
+                    current_row.append(f"{label} {url}")
                 else:
+                    # Jika tidak ada link, ambil teks biasa saja
                     current_row.append(cell.value if cell.value is not None else "")
             data_rows.append(current_row)
 
