@@ -1,9 +1,8 @@
 name: Bot_SCM_Tiap_Malam
 on:
   schedule:
-    # 10:30 UTC sama dengan 18:30 WITA
-    - cron: '13 18 * * *'
-    # 16:14 UTC sama dengan 00:14 WITA
+    - cron: '33 07 * * *'
+    - cron: '19 15 * * *'
     - cron: '14 00 * * *'
   workflow_dispatch:
 
