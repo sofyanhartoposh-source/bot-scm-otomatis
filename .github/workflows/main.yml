@@ -1,7 +1,7 @@
 name: Bot_SCM_Tiap_Malam
 on:
   schedule:
-    - cron: '47 15 * * *' # Jam 22:47 WIB
+    - cron: '14 00 * * *' # Jam 00:14 WIB
   workflow_dispatch: # Supaya bisa kita klik 'Run' manual buat ngetes
 
 jobs:
