@@ -1,8 +1,11 @@
 name: Bot_SCM_Tiap_Malam
 on:
   schedule:
-    - cron: '14 00 * * *' # Jam 00:14 WIB
-  workflow_dispatch: # Supaya bisa kita klik 'Run' manual buat ngetes
+    # 10:30 UTC sama dengan 18:30 WITA
+    - cron: '30 10 * * *'
+    # 16:14 UTC sama dengan 00:14 WITA
+    - cron: '14 16 * * *'
+  workflow_dispatch:
 
 jobs:
   eksekusi:
