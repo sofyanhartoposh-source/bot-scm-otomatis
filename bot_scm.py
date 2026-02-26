@@ -56,7 +56,7 @@ def jalankan_bot():
 
         print("[4/6] Menembak URL Export Langsung...")
         session_cookies = {c['name']: c['value'] for c in cookies}
-        export_url = "https://scm.nusadaya.net/monitoring-kontrak-rinci/export?khs=all&bidang=all&tahun=2026&stage="
+        export_url = "https://scm.nusadaya.net/monitoring-kontrak-rinci/export?khs=all&bidang=all&tahun=all&stage="
         
         response_dl = requests.get(export_url, cookies=session_cookies)
         
