@@ -1,8 +1,8 @@
 name: Bot_SCM_Tiap_Malam
 on:
   schedule:
-    # Menit ke-23 di setiap 3 jam
-    - cron: '23 */3 * * *' 
+    # Menit ke-43 di setiap 1 jam
+    - cron: '43 */1 * * *' 
   workflow_dispatch:
 
 jobs:
