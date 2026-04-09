@@ -21,7 +21,7 @@ def jalankan_bot():
     options.add_argument('--remote-debugging-port=9222') # Paksa port debug agar tidak bentrok
     
     print("[1/6] Menyiapkan Browser Siluman...")
-    driver = uc.Chrome(options=options, version_main=144)
+    driver = uc.Chrome(options=options)
     
     try:
         print("[2/6] Membuka Halaman Login: https://scm.nusadaya.net/login")
