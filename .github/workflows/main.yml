@@ -1,7 +1,7 @@
 name: Bot_SCM_Tiap_Malam
 on:
   schedule:
-    # Menit ke-23 di setiap 4 jam (sesuai cron kamu: */4)
+    # Menit ke-23 di setiap 4 jam
     - cron: '23 */4 * * *' 
   workflow_dispatch:
 
@@ -17,13 +17,12 @@ jobs:
           python-version: '3.10'
           
       - name: Install Library
-        # Ditambahkan --upgrade agar selalu pakai versi terbaru yang dukung Chrome 146
+        # Gunakan --upgrade agar library selalu mendukung versi Chrome terbaru di GitHub
         run: |
           python -m pip install --upgrade pip
           pip install --upgrade requests selenium undetected-chromedriver pandas openpyxl
         
       - name: Jalankan Bot
-        # Bagian env ini yang WAJIB ada supaya bot bisa baca Secret kamu
         env:
           EMAIL_SCM: ${{ secrets.EMAIL_SCM }}
           PASS_SCM: ${{ secrets.PASS_SCM }}
