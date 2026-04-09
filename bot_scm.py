@@ -22,7 +22,7 @@ def jalankan_bot():
     
     print("[1/6] Menyiapkan Browser Siluman...")
     # PERBAIKAN: Menghapus version_main=144 agar otomatis mencari versi Chrome terbaru
-    driver = uc.Chrome(options=options)
+    driver = uc.Chrome(options=options, version_main=144)
     
     try:
         print("[2/6] Membuka Halaman Login: https://scm.nusadaya.net/login")
