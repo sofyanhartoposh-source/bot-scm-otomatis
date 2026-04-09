@@ -17,12 +17,12 @@ def jalankan_bot():
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--remote-debugging-port=9222')
+    options.add_argument('--disable-gpu') # Tambahan penting untuk server
+    options.add_argument('--remote-debugging-port=9222') # Paksa port debug agar tidak bentrok
     
     print("[1/6] Menyiapkan Browser Siluman...")
-    # PERBAIKAN: Hapus version_main agar otomatis deteksi Chrome terbaru di GitHub Actions
-    driver = uc.Chrome(options=options)
+    # UPDATE: Menggunakan versi 146 sesuai permintaan Boss
+    driver = uc.Chrome(options=options, version_main=146)
     
     try:
         print("[2/6] Membuka Halaman Login: https://scm.nusadaya.net/login")
@@ -31,6 +31,7 @@ def jalankan_bot():
         wait = WebDriverWait(driver, 25)
         
         print("[3/6] Mengisi Form Login...")
+        # Bot akan mengambil data dari brankas GitHub Secrets
         email_rahasia = os.environ.get('EMAIL_SCM')
         pass_rahasia = os.environ.get('PASS_SCM')
 
@@ -47,6 +48,7 @@ def jalankan_bot():
         print("-> Login dikirim, menunggu dashboard (15 detik)...")
         time.sleep(15)
         
+        # Cek apakah login berhasil dengan melihat cookie
         cookies = driver.get_cookies()
         if not cookies:
             print("(!) Peringatan: Tidak ada cookie terdeteksi. Login mungkin gagal.")
@@ -55,7 +57,6 @@ def jalankan_bot():
 
         print("[4/6] Menembak URL Export Langsung...")
         session_cookies = {c['name']: c['value'] for c in cookies}
-        # Gunakan URL export sesuai kebutuhan bot ini
         export_url = "https://scm.nusadaya.net/monitoring-kontrak-rinci/export?khs=all&bidang=all&tahun=all&stage="
         
         response_dl = requests.get(export_url, cookies=session_cookies)
@@ -67,17 +68,20 @@ def jalankan_bot():
             return
 
         print("[5/6] Membongkar isi Excel & Mengekstrak Hyperlink...")
+        
+        # Gunakan engine openpyxl untuk membaca file excel
         from openpyxl import load_workbook
         
         wb = load_workbook(filename=io.BytesIO(response_dl.content), data_only=False)
         ws = wb.active
         
         data_rows = []
+        # Mulai iterasi dari baris ke-2
         for row in ws.iter_rows(min_row=2):
             current_row = []
             for cell in row:
+                # MODIFIKASI: Ambil Label + Link sekaligus
                 if cell.hyperlink:
-                    # Gabungkan Label dan URL dengan spasi untuk diproses ulang di GAS
                     label = str(cell.value) if cell.value is not None else "Lihat File"
                     url = cell.hyperlink.target
                     current_row.append(f"{label} {url}")
@@ -85,28 +89,21 @@ def jalankan_bot():
                     current_row.append(cell.value if cell.value is not None else "")
             data_rows.append(current_row)
 
-        print(f"-> Total data ditemukan: {len(data_rows)} baris.")
+        print(f"-> Total data ditemukan: {len(data_rows)} baris dengan hyperlink diekstrak.")
 
         print("[6/6] Mengirim data ke Google Sheets...")
         gas_url = "https://script.google.com/macros/s/AKfycbzrpSwYWqzvtvqugpWI2UTr6Ivg2C87qFkIO4UrYwyaBIglD8zX7jDV_aPNzBImwSI/exec"
         
-        # WAJIB: Tambahkan "target" agar GAS tahu nama sheet tujuan
-        payload = json.dumps({
-            "target": "Data SCM Update", # Sesuaikan dengan nama tab sheet kamu
-            "rows": data_rows
-        })
-        
+        payload = json.dumps({"rows": data_rows})
         res_gas = requests.post(gas_url, data=payload, headers={'Content-Type': 'application/json'})
+        
         print(f"=== [HASIL AKHIR] Respon dari Google Sheets: {res_gas.text} ===")
 
     except Exception as e:
         print(f"!!! [ERROR] Terjadi kendala teknis: {str(e)}")
     finally:
         print("=== [LOG END] Menutup Browser & Selesai ===")
-        try:
-            driver.quit()
-        except:
-            pass
+        driver.quit()
 
 if __name__ == "__main__":
     jalankan_bot()
